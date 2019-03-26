@@ -28,7 +28,7 @@ FLAGS = flags.FLAGS
 
 # TO-DO replace this with label map
 def class_text_to_int(row_label):
-    if row_label == 'arrow':
+    if row_label == 'railway_arrow':
         return 1
     else:
         None
