@@ -1,26 +1,26 @@
 <annotation>
 	<folder>train</folder>
 	<filename>8.png</filename>
-	<path>/home/alexandra/work/object_detection/Images/train/8.png</path>
+	<path>/home/alexandra/.git/local_directory/images/train/8.png</path>
 	<source>
 		<database>Unknown</database>
 	</source>
 	<size>
-		<width>2064</width>
-		<height>1544</height>
+		<width>800</width>
+		<height>600</height>
 		<depth>3</depth>
 	</size>
 	<segmented>0</segmented>
 	<object>
-		<name>railway_arrow</name>
+		<name>railway_arrows</name>
 		<pose>Unspecified</pose>
 		<truncated>0</truncated>
 		<difficult>0</difficult>
 		<bndbox>
-			<xmin>945</xmin>
-			<ymin>1064</ymin>
-			<xmax>1175</xmax>
-			<ymax>1543</ymax>
+			<xmin>397</xmin>
+			<ymin>242</ymin>
+			<xmax>479</xmax>
+			<ymax>349</ymax>
 		</bndbox>
 	</object>
 </annotation>

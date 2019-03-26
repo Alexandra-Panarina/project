@@ -1,0 +1,26 @@
+<annotation>
+	<folder>test</folder>
+	<filename>3.png</filename>
+	<path>/home/alexandra/.git/local_directory/images/test/3.png</path>
+	<source>
+		<database>Unknown</database>
+	</source>
+	<size>
+		<width>800</width>
+		<height>600</height>
+		<depth>3</depth>
+	</size>
+	<segmented>0</segmented>
+	<object>
+		<name>railway_arrows</name>
+		<pose>Unspecified</pose>
+		<truncated>0</truncated>
+		<difficult>0</difficult>
+		<bndbox>
+			<xmin>447</xmin>
+			<ymin>222</ymin>
+			<xmax>513</xmax>
+			<ymax>304</ymax>
+		</bndbox>
+	</object>
+</annotation>
