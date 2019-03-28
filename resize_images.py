@@ -11,17 +11,20 @@ if __name__ == "__main__":
     parser.add_argument(
         "--raw-dir",
         help="Directory path to raw images.",
-        default="./data",
+        default="/home/alexandra/work/object_detection/Images",
         type=str,
     )
     parser.add_argument(
         "--save-dir",
         help="Directory path to save resized images.",
-        default="./images",
+        default="/home/alexandra/work/",
         type=str,
     )
     parser.add_argument(
-        "--ext", help="Raw image files extension to resize.", default="png", type=str
+        "--ext", 
+         help="Raw image files extension to resize.",
+         default="png", 
+         type=str
     )
     parser.add_argument(
         "--target-size",
