@@ -11,13 +11,13 @@ if __name__ == "__main__":
     parser.add_argument(
         "--raw-dir",
         help="Directory path to raw images.",
-        default="/home/alexandra/work/object_detection/Images",
+        default="/content/drive/My Drive/png",
         type=str,
     )
     parser.add_argument(
         "--save-dir",
         help="Directory path to save resized images.",
-        default="/home/alexandra/work/",
+        default="/content/project/images/test",
         type=str,
     )
     parser.add_argument(
