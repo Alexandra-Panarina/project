@@ -17,22 +17,10 @@
 		<truncated>0</truncated>
 		<difficult>0</difficult>
 		<bndbox>
-			<xmin>310</xmin>
-			<ymin>288</ymin>
-			<xmax>422</xmax>
-			<ymax>458</ymax>
-		</bndbox>
-	</object>
-	<object>
-		<name>railway_arrows</name>
-		<pose>Unspecified</pose>
-		<truncated>0</truncated>
-		<difficult>0</difficult>
-		<bndbox>
-			<xmin>532</xmin>
-			<ymin>287</ymin>
-			<xmax>650</xmax>
-			<ymax>484</ymax>
+			<xmin>408</xmin>
+			<ymin>203</ymin>
+			<xmax>476</xmax>
+			<ymax>309</ymax>
 		</bndbox>
 	</object>
 </annotation>
