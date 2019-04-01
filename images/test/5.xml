@@ -14,13 +14,13 @@
 	<object>
 		<name>railway_arrows</name>
 		<pose>Unspecified</pose>
-		<truncated>1</truncated>
+		<truncated>0</truncated>
 		<difficult>0</difficult>
 		<bndbox>
-			<xmin>442</xmin>
-			<ymin>451</ymin>
-			<xmax>564</xmax>
-			<ymax>600</ymax>
+			<xmin>328</xmin>
+			<ymin>181</ymin>
+			<xmax>396</xmax>
+			<ymax>248</ymax>
 		</bndbox>
 	</object>
 </annotation>
