@@ -22,8 +22,8 @@ from absl import flags
 
 import tensorflow as tf
 
-import model_hparams
-import model_lib
+from object_detection import model_hparams
+from object_detection import model_lib
 
 flags.DEFINE_string(
     'model_dir', None, 'Path to output model directory '
