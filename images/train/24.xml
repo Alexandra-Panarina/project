@@ -6,8 +6,8 @@
 		<database>Unknown</database>
 	</source>
 	<size>
-		<width>800</width>
-		<height>600</height>
+		<width>2064</width>
+		<height>1544</height>
 		<depth>3</depth>
 	</size>
 	<segmented>0</segmented>
@@ -17,22 +17,10 @@
 		<truncated>0</truncated>
 		<difficult>0</difficult>
 		<bndbox>
-			<xmin>503</xmin>
-			<ymin>165</ymin>
-			<xmax>551</xmax>
-			<ymax>214</ymax>
-		</bndbox>
-	</object>
-	<object>
-		<name>railway_arrows</name>
-		<pose>Unspecified</pose>
-		<truncated>0</truncated>
-		<difficult>0</difficult>
-		<bndbox>
-			<xmin>384</xmin>
-			<ymin>238</ymin>
-			<xmax>509</xmax>
-			<ymax>477</ymax>
+			<xmin>1114</xmin>
+			<ymin>562</ymin>
+			<xmax>1368</xmax>
+			<ymax>789</ymax>
 		</bndbox>
 	</object>
 </annotation>
