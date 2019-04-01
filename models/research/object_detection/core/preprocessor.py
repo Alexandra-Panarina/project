@@ -13,19 +13,16 @@
 # limitations under the License.
 # ==============================================================================
 """Preprocess images and bounding boxes for detection.
-
 We perform two sets of operations in preprocessing stage:
 (a) operations that are applied to both training and testing data,
 (b) operations that are applied only to training data for the purpose of
     data augmentation.
-
 A preprocessing function receives a set of inputs,
 e.g. an image and bounding boxes,
 performs an operation on them, and returns them.
 Some examples are: randomly cropping the image, randomly mirroring the image,
                    randomly changing the brightness, contrast, hue and
                    randomly jittering the bounding boxes.
-
 The preprocess function receives a tensor_dict which is a dictionary that maps
 different field names to their tensors. For example,
 tensor_dict[fields.InputDataFields.image] holds the image tensor.
@@ -34,7 +31,6 @@ dtype=tf.float32. The groundtruth_boxes is a rank 2 tensor: [N, 4] where
 in each row there is a box with [ymin xmin ymax xmax].
 Boxes are in normalized coordinates meaning
 their coordinate values range in [0, 1]
-
 To preprocess multiple images with the same operations in cases where
 nondeterministic operations are used, a preprocessor_cache.PreprocessorCache
 object can be passed into the preprocess function or individual operations.
@@ -43,7 +39,6 @@ E.g.
 Let tensor_dict{1,2,3,4,5} be copies of the same inputs.
 Let preprocess_options contain nondeterministic operation(s) excluding
 random_jitter_boxes.
-
 cache1 = preprocessor_cache.PreprocessorCache()
 cache2 = preprocessor_cache.PreprocessorCache()
 a = preprocess(tensor_dict1, preprocess_options, preprocess_vars_cache=cache1)
@@ -51,11 +46,9 @@ b = preprocess(tensor_dict2, preprocess_options, preprocess_vars_cache=cache1)
 c = preprocess(tensor_dict3, preprocess_options, preprocess_vars_cache=cache2)
 d = preprocess(tensor_dict4, preprocess_options, preprocess_vars_cache=cache2)
 e = preprocess(tensor_dict5, preprocess_options)
-
 Then correspondings tensors of object pairs (a,b) and (c,d)
 are guaranteed to be equal element-wise, but the equality of any other object
 pair cannot be determined.
-
 Important Note: In tensor_dict, images is a rank 4 tensor, but preprocessing
 functions receive a rank 3 tensor for processing the image. Thus, inside the
 preprocess function we squeeze the image to become a rank 3 tensor and then
@@ -84,10 +77,8 @@ def _apply_with_random_selector(x,
                                 preprocess_vars_cache=None,
                                 key=''):
   """Computes func(x, sel), with sel sampled from [0...num_cases-1].
-
   If both preprocess_vars_cache AND key are the same between two calls, sel will
   be the same value in both calls.
-
   Args:
     x: input Tensor.
     func: Python function to apply.
@@ -97,7 +88,6 @@ def _apply_with_random_selector(x,
                            function is called multiple times with the same
                            non-null cache, it will perform deterministically.
     key: variable identifier for preprocess_vars_cache.
-
   Returns:
     The result of func(x, sel), where func receives the value of the
     selector as a python integer, but sel is sampled dynamically.
@@ -120,10 +110,8 @@ def _apply_with_random_selector_tuples(x,
                                        preprocess_vars_cache=None,
                                        key=''):
   """Computes func(x, sel), with sel sampled from [0...num_cases-1].
-
   If both preprocess_vars_cache AND key are the same between two calls, sel will
   be the same value in both calls.
-
   Args:
     x: A tuple of input tensors.
     func: Python function to apply.
@@ -133,7 +121,6 @@ def _apply_with_random_selector_tuples(x,
                            function is called multiple times with the same
                            non-null cache, it will perform deterministically.
     key: variable identifier for preprocess_vars_cache.
-
   Returns:
     The result of func(x, sel), where func receives the value of the
     selector as a python integer, but sel is sampled dynamically.
@@ -163,11 +150,9 @@ def _get_or_create_preprocess_rand_vars(generator_func,
                                         preprocess_vars_cache,
                                         key=''):
   """Returns a tensor stored in preprocess_vars_cache or using generator_func.
-
   If the tensor was previously generated and appears in the PreprocessorCache,
   the previously generated tensor will be returned. Otherwise, a new tensor
   is generated using generator_func and stored in the cache.
-
   Args:
     generator_func: A 0-argument function that generates a tensor.
     function_id: identifier for the preprocessing function used.
@@ -191,12 +176,10 @@ def _get_or_create_preprocess_rand_vars(generator_func,
 
 def _random_integer(minval, maxval, seed):
   """Returns a random 0-D tensor between minval and maxval.
-
   Args:
     minval: minimum value of the random tensor.
     maxval: maximum value of the random tensor.
     seed: random seed.
-
   Returns:
     A random 0-D tensor between minval and maxval.
   """
@@ -209,16 +192,13 @@ def _random_integer(minval, maxval, seed):
 # tf.image.rgb_to_grayscale after quantization support is added.
 def _rgb_to_grayscale(images, name=None):
   """Converts one or more images from RGB to Grayscale.
-
   Outputs a tensor of the same `DType` and rank as `images`.  The size of the
   last dimension of the output is 1, containing the Grayscale value of the
   pixels.
-
   Args:
     images: The RGB tensor to convert. Last dimension must have size 3 and
       should contain RGB values.
     name: A name for the operation (optional).
-
   Returns:
     The converted grayscale image(s).
   """
@@ -241,10 +221,8 @@ def _rgb_to_grayscale(images, name=None):
 def normalize_image(image, original_minval, original_maxval, target_minval,
                     target_maxval):
   """Normalizes pixel values in the image.
-
   Moves the pixel values from the current [original_minval, original_maxval]
   range to a the [target_minval, target_maxval] range.
-
   Args:
     image: rank 3 float32 tensor containing 1
            image -> [height, width, channels].
@@ -252,7 +230,6 @@ def normalize_image(image, original_minval, original_maxval, target_minval,
     original_maxval: current image maximum value.
     target_minval: target image minimum value.
     target_maxval: target image maximum value.
-
   Returns:
     image: image which is the same shape as input image.
   """
@@ -278,11 +255,9 @@ def retain_boxes_above_threshold(boxes,
                                  keypoints=None,
                                  threshold=0.0):
   """Retains boxes whose label weight is above a given threshold.
-
   If the label weight for a box is missing (represented by NaN), the box is
   retained. The boxes that don't pass the threshold will not appear in the
   returned tensor.
-
   Args:
     boxes: float32 tensor of shape [num_instance, 4] representing boxes
       location in normalized coordinates.
@@ -302,15 +277,12 @@ def retain_boxes_above_threshold(boxes,
       [num_instances, num_keypoints, 2]. The keypoints are in y-x normalized
       coordinates.
     threshold: scalar python float.
-
   Returns:
     retained_boxes: [num_retained_instance, 4]
     retianed_labels: [num_retained_instance]
     retained_label_weights: [num_retained_instance]
-
     If multiclass_scores, masks, or keypoints are not None, the function also
       returns:
-
     retained_multiclass_scores: [num_retained_instance, num_classes]
     retained_masks: [num_retained_instance, height, width]
     retained_keypoints: [num_retained_instance, num_keypoints, 2]
@@ -346,13 +318,11 @@ def retain_boxes_above_threshold(boxes,
 
 def _flip_boxes_left_right(boxes):
   """Left-right flip the boxes.
-
   Args:
     boxes: rank 2 float32 tensor containing the bounding boxes -> [N, 4].
            Boxes are in normalized form meaning their coordinates vary
            between [0, 1].
            Each row is in the form of [ymin, xmin, ymax, xmax].
-
   Returns:
     Flipped boxes.
   """
@@ -365,13 +335,11 @@ def _flip_boxes_left_right(boxes):
 
 def _flip_boxes_up_down(boxes):
   """Up-down flip the boxes.
-
   Args:
     boxes: rank 2 float32 tensor containing the bounding boxes -> [N, 4].
            Boxes are in normalized form meaning their coordinates vary
            between [0, 1].
            Each row is in the form of [ymin, xmin, ymax, xmax].
-
   Returns:
     Flipped boxes.
   """
@@ -384,13 +352,11 @@ def _flip_boxes_up_down(boxes):
 
 def _rot90_boxes(boxes):
   """Rotate boxes counter-clockwise by 90 degrees.
-
   Args:
     boxes: rank 2 float32 tensor containing the bounding boxes -> [N, 4].
            Boxes are in normalized form meaning their coordinates vary
            between [0, 1].
            Each row is in the form of [ymin, xmin, ymax, xmax].
-
   Returns:
     Rotated boxes.
   """
@@ -406,11 +372,9 @@ def _rot90_boxes(boxes):
 
 def _flip_masks_left_right(masks):
   """Left-right flip masks.
-
   Args:
     masks: rank 3 float32 tensor with shape
       [num_instances, height, width] representing instance masks.
-
   Returns:
     flipped masks: rank 3 float32 tensor with shape
       [num_instances, height, width] representing instance masks.
@@ -420,11 +384,9 @@ def _flip_masks_left_right(masks):
 
 def _flip_masks_up_down(masks):
   """Up-down flip masks.
-
   Args:
     masks: rank 3 float32 tensor with shape
       [num_instances, height, width] representing instance masks.
-
   Returns:
     flipped masks: rank 3 float32 tensor with shape
       [num_instances, height, width] representing instance masks.
@@ -434,11 +396,9 @@ def _flip_masks_up_down(masks):
 
 def _rot90_masks(masks):
   """Rotate masks counter-clockwise by 90 degrees.
-
   Args:
     masks: rank 3 float32 tensor with shape
       [num_instances, height, width] representing instance masks.
-
   Returns:
     rotated masks: rank 3 float32 tensor with shape
       [num_instances, height, width] representing instance masks.
@@ -455,9 +415,7 @@ def random_horizontal_flip(image,
                            seed=None,
                            preprocess_vars_cache=None):
   """Randomly flips the image and detections horizontally.
-
   The probability of flipping the image is 50%.
-
   Args:
     image: rank 3 float32 tensor with shape [height, width, channels].
     boxes: (optional) rank 2 float32 tensor with shape [N, 4]
@@ -478,13 +436,10 @@ def random_horizontal_flip(image,
                            performed augmentations. Updated in-place. If this
                            function is called multiple times with the same
                            non-null cache, it will perform deterministically.
-
   Returns:
     image: image which is the same shape as input image.
-
     If boxes, masks, keypoints, and keypoint_flip_permutation are not None,
     the function also returns the following tensors.
-
     boxes: rank 2 float32 tensor containing the bounding boxes -> [N, 4].
            Boxes are in normalized form meaning their coordinates vary
            between [0, 1].
@@ -492,7 +447,6 @@ def random_horizontal_flip(image,
            containing instance masks.
     keypoints: rank 3 float32 tensor with shape
                [num_instances, num_keypoints, 2]
-
   Raises:
     ValueError: if keypoints are provided but keypoint_flip_permutation is not.
   """
@@ -552,9 +506,7 @@ def random_vertical_flip(image,
                          seed=None,
                          preprocess_vars_cache=None):
   """Randomly flips the image and detections vertically.
-
   The probability of flipping the image is 50%.
-
   Args:
     image: rank 3 float32 tensor with shape [height, width, channels].
     boxes: (optional) rank 2 float32 tensor with shape [N, 4]
@@ -575,13 +527,10 @@ def random_vertical_flip(image,
                            performed augmentations. Updated in-place. If this
                            function is called multiple times with the same
                            non-null cache, it will perform deterministically.
-
   Returns:
     image: image which is the same shape as input image.
-
     If boxes, masks, keypoints, and keypoint_flip_permutation are not None,
     the function also returns the following tensors.
-
     boxes: rank 2 float32 tensor containing the bounding boxes -> [N, 4].
            Boxes are in normalized form meaning their coordinates vary
            between [0, 1].
@@ -589,7 +538,6 @@ def random_vertical_flip(image,
            containing instance masks.
     keypoints: rank 3 float32 tensor with shape
                [num_instances, num_keypoints, 2]
-
   Raises:
     ValueError: if keypoints are provided but keypoint_flip_permutation is not.
   """
@@ -647,12 +595,10 @@ def random_rotation90(image,
                       seed=None,
                       preprocess_vars_cache=None):
   """Randomly rotates the image and detections 90 degrees counter-clockwise.
-
   The probability of rotating the image is 50%. This can be combined with
   random_horizontal_flip and random_vertical_flip to produce an output with a
   uniform distribution of the eight possible 90 degree rotation / reflection
   combinations.
-
   Args:
     image: rank 3 float32 tensor with shape [height, width, channels].
     boxes: (optional) rank 2 float32 tensor with shape [N, 4]
@@ -671,13 +617,10 @@ def random_rotation90(image,
                            performed augmentations. Updated in-place. If this
                            function is called multiple times with the same
                            non-null cache, it will perform deterministically.
-
   Returns:
     image: image which is the same shape as input image.
-
     If boxes, masks, and keypoints, are not None,
     the function also returns the following tensors.
-
     boxes: rank 2 float32 tensor containing the bounding boxes -> [N, 4].
            Boxes are in normalized form meaning their coordinates vary
            between [0, 1].
@@ -736,11 +679,9 @@ def random_pixel_value_scale(image,
                              seed=None,
                              preprocess_vars_cache=None):
   """Scales each value in the pixels of the image.
-
      This function scales each pixel independent of the other ones.
      For each value in image tensor, draws a random number between
      minval and maxval and multiples the values with them.
-
   Args:
     image: rank 3 float32 tensor contains 1 image -> [height, width, channels]
            with pixel values varying between [0, 255].
@@ -751,7 +692,6 @@ def random_pixel_value_scale(image,
                            performed augmentations. Updated in-place. If this
                            function is called multiple times with the same
                            non-null cache, it will perform deterministically.
-
   Returns:
     image: image which is the same shape as input image.
   """
@@ -778,7 +718,6 @@ def random_image_scale(image,
                        seed=None,
                        preprocess_vars_cache=None):
   """Scales the image size.
-
   Args:
     image: rank 3 float32 tensor contains 1 image -> [height, width, channels].
     masks: (optional) rank 3 float32 tensor containing masks with
@@ -791,7 +730,6 @@ def random_image_scale(image,
                            performed augmentations. Updated in-place. If this
                            function is called multiple times with the same
                            non-null cache, it will perform deterministically.
-
   Returns:
     image: image which is the same rank as input image.
     masks: If masks is not none, resized masks which are the same rank as input
@@ -826,20 +764,11 @@ def random_image_scale(image,
     return tuple(result)
 
 
-def _augment_only_rgb_channels(image, augment_function):
-  """Augments only the RGB slice of an image with additional channels."""
-  rgb_slice = image[:, :, :3]
-  augmented_rgb_slice = augment_function(rgb_slice)
-  image = tf.concat([augmented_rgb_slice, image[:, :, 3:]], -1)
-  return image
-
-
 def random_rgb_to_gray(image,
                        probability=0.1,
                        seed=None,
                        preprocess_vars_cache=None):
   """Changes the image from RGB to Grayscale with the given probability.
-
   Args:
     image: rank 3 float32 tensor contains 1 image -> [height, width, channels]
            with pixel values varying between [0, 255].
@@ -850,7 +779,6 @@ def random_rgb_to_gray(image,
                            performed augmentations. Updated in-place. If this
                            function is called multiple times with the same
                            non-null cache, it will perform deterministically.
-
   Returns:
     image: image which is the same shape as input image.
   """
@@ -868,7 +796,7 @@ def random_rgb_to_gray(image,
 
     image = tf.cond(
         tf.greater(do_gray_random, probability), lambda: image,
-        lambda: _augment_only_rgb_channels(image, _image_to_gray))
+        lambda: _image_to_gray(image))
 
   return image
 
@@ -878,9 +806,7 @@ def random_adjust_brightness(image,
                              seed=None,
                              preprocess_vars_cache=None):
   """Randomly adjusts brightness.
-
   Makes sure the output image is still between 0 and 255.
-
   Args:
     image: rank 3 float32 tensor contains 1 image -> [height, width, channels]
            with pixel values varying between [0, 255].
@@ -890,7 +816,6 @@ def random_adjust_brightness(image,
                            performed augmentations. Updated in-place. If this
                            function is called multiple times with the same
                            non-null cache, it will perform deterministically.
-
   Returns:
     image: image which is the same shape as input image.
     boxes: boxes which is the same shape as input boxes.
@@ -903,12 +828,8 @@ def random_adjust_brightness(image,
         preprocessor_cache.PreprocessorCache.ADJUST_BRIGHTNESS,
         preprocess_vars_cache)
 
-    def _adjust_brightness(image):
-      image = tf.image.adjust_brightness(image / 255, delta) * 255
-      image = tf.clip_by_value(image, clip_value_min=0.0, clip_value_max=255.0)
-      return image
-
-    image = _augment_only_rgb_channels(image, _adjust_brightness)
+    image = tf.image.adjust_brightness(image / 255, delta) * 255
+    image = tf.clip_by_value(image, clip_value_min=0.0, clip_value_max=255.0)
     return image
 
 
@@ -918,9 +839,7 @@ def random_adjust_contrast(image,
                            seed=None,
                            preprocess_vars_cache=None):
   """Randomly adjusts contrast.
-
   Makes sure the output image is still between 0 and 255.
-
   Args:
     image: rank 3 float32 tensor contains 1 image -> [height, width, channels]
            with pixel values varying between [0, 255].
@@ -933,7 +852,6 @@ def random_adjust_contrast(image,
                            performed augmentations. Updated in-place. If this
                            function is called multiple times with the same
                            non-null cache, it will perform deterministically.
-
   Returns:
     image: image which is the same shape as input image.
   """
@@ -944,12 +862,8 @@ def random_adjust_contrast(image,
         generator_func,
         preprocessor_cache.PreprocessorCache.ADJUST_CONTRAST,
         preprocess_vars_cache)
-
-    def _adjust_contrast(image):
-      image = tf.image.adjust_contrast(image / 255, contrast_factor) * 255
-      image = tf.clip_by_value(image, clip_value_min=0.0, clip_value_max=255.0)
-      return image
-    image = _augment_only_rgb_channels(image, _adjust_contrast)
+    image = tf.image.adjust_contrast(image / 255, contrast_factor) * 255
+    image = tf.clip_by_value(image, clip_value_min=0.0, clip_value_max=255.0)
     return image
 
 
@@ -958,9 +872,7 @@ def random_adjust_hue(image,
                       seed=None,
                       preprocess_vars_cache=None):
   """Randomly adjusts hue.
-
   Makes sure the output image is still between 0 and 255.
-
   Args:
     image: rank 3 float32 tensor contains 1 image -> [height, width, channels]
            with pixel values varying between [0, 255].
@@ -970,7 +882,6 @@ def random_adjust_hue(image,
                            performed augmentations. Updated in-place. If this
                            function is called multiple times with the same
                            non-null cache, it will perform deterministically.
-
   Returns:
     image: image which is the same shape as input image.
   """
@@ -980,11 +891,8 @@ def random_adjust_hue(image,
     delta = _get_or_create_preprocess_rand_vars(
         generator_func, preprocessor_cache.PreprocessorCache.ADJUST_HUE,
         preprocess_vars_cache)
-    def _adjust_hue(image):
-      image = tf.image.adjust_hue(image / 255, delta) * 255
-      image = tf.clip_by_value(image, clip_value_min=0.0, clip_value_max=255.0)
-      return image
-    image = _augment_only_rgb_channels(image, _adjust_hue)
+    image = tf.image.adjust_hue(image / 255, delta) * 255
+    image = tf.clip_by_value(image, clip_value_min=0.0, clip_value_max=255.0)
     return image
 
 
@@ -994,9 +902,7 @@ def random_adjust_saturation(image,
                              seed=None,
                              preprocess_vars_cache=None):
   """Randomly adjusts saturation.
-
   Makes sure the output image is still between 0 and 255.
-
   Args:
     image: rank 3 float32 tensor contains 1 image -> [height, width, channels]
            with pixel values varying between [0, 255].
@@ -1009,7 +915,6 @@ def random_adjust_saturation(image,
                            performed augmentations. Updated in-place. If this
                            function is called multiple times with the same
                            non-null cache, it will perform deterministically.
-
   Returns:
     image: image which is the same shape as input image.
   """
@@ -1020,20 +925,15 @@ def random_adjust_saturation(image,
         generator_func,
         preprocessor_cache.PreprocessorCache.ADJUST_SATURATION,
         preprocess_vars_cache)
-    def _adjust_saturation(image):
-      image = tf.image.adjust_saturation(image / 255, saturation_factor) * 255
-      image = tf.clip_by_value(image, clip_value_min=0.0, clip_value_max=255.0)
-      return image
-    image = _augment_only_rgb_channels(image, _adjust_saturation)
+    image = tf.image.adjust_saturation(image / 255, saturation_factor) * 255
+    image = tf.clip_by_value(image, clip_value_min=0.0, clip_value_max=255.0)
     return image
 
 
 def random_distort_color(image, color_ordering=0, preprocess_vars_cache=None):
   """Randomly distorts color.
-
   Randomly distorts color using a combination of brightness, hue, contrast and
   saturation changes. Makes sure the output image is still between 0 and 255.
-
   Args:
     image: rank 3 float32 tensor contains 1 image -> [height, width, channels]
            with pixel values varying between [0, 255].
@@ -1042,10 +942,8 @@ def random_distort_color(image, color_ordering=0, preprocess_vars_cache=None):
                            performed augmentations. Updated in-place. If this
                            function is called multiple times with the same
                            non-null cache, it will perform deterministically.
-
   Returns:
     image: image which is the same shape as input image.
-
   Raises:
     ValueError: if color_ordering is not in {0, 1}.
   """
@@ -1084,7 +982,6 @@ def random_distort_color(image, color_ordering=0, preprocess_vars_cache=None):
 
 def random_jitter_boxes(boxes, ratio=0.05, seed=None):
   """Randomly jitter boxes in image.
-
   Args:
     boxes: rank 2 float32 tensor containing the bounding boxes -> [N, 4].
            Boxes are in normalized form meaning their coordinates vary
@@ -1094,19 +991,16 @@ def random_jitter_boxes(boxes, ratio=0.05, seed=None):
            For example if the width is 100 pixels and ratio is 0.05,
            the corners can jitter up to 5 pixels in the x direction.
     seed: random seed.
-
   Returns:
     boxes: boxes which is the same shape as input boxes.
   """
   def random_jitter_box(box, ratio, seed):
     """Randomly jitter box.
-
     Args:
       box: bounding box [1, 1, 4].
       ratio: max ratio between jittered box and original box,
       a number between [0, 0.5].
       seed: random seed.
-
     Returns:
       jittered_box: jittered box.
     """
@@ -1149,12 +1043,10 @@ def _strict_random_crop_image(image,
                               clip_boxes=True,
                               preprocess_vars_cache=None):
   """Performs random crop.
-
   Note: Keypoint coordinates that are outside the crop will be set to NaN, which
   is consistent with the original keypoint encoding for non-existing keypoints.
   This function always crops the image and is supposed to be used by
   `random_crop_image` function which sometimes returns the image unchanged.
-
   Args:
     image: rank 3 float32 tensor containing 1 image -> [height, width, channels]
            with pixel values varying between [0, 1].
@@ -1189,13 +1081,11 @@ def _strict_random_crop_image(image,
                            performed augmentations. Updated in-place. If this
                            function is called multiple times with the same
                            non-null cache, it will perform deterministically.
-
   Returns:
     image: image which is the same rank as input image.
     boxes: boxes which is the same rank as input boxes.
            Boxes are in normalized form.
     labels: new labels.
-
     If label_weights, multiclass_scores, masks, or keypoints is not None, the
     function also returns:
     label_weights: rank 1 float32 tensor with shape [num_instances].
@@ -1328,7 +1218,6 @@ def random_crop_image(image,
                       seed=None,
                       preprocess_vars_cache=None):
   """Randomly crops the image.
-
   Given the input image and its bounding boxes, this op randomly
   crops a subimage.  Given a user-provided set of input constraints,
   the crop window is resampled until it satisfies these constraints.
@@ -1337,10 +1226,8 @@ def random_crop_image(image,
   constraints. Both input boxes and returned Boxes are in normalized
   form (e.g., lie in the unit square [0, 1]).
   This function will return the original image with probability random_coef.
-
   Note: Keypoint coordinates that are outside the crop will be set to NaN, which
   is consistent with the original keypoint encoding for non-existing keypoints.
-
   Args:
     image: rank 3 float32 tensor contains 1 image -> [height, width, channels]
            with pixel values varying between [0, 1].
@@ -1380,13 +1267,11 @@ def random_crop_image(image,
                            performed augmentations. Updated in-place. If this
                            function is called multiple times with the same
                            non-null cache, it will perform deterministically.
-
   Returns:
     image: Image shape will be [new_height, new_width, channels].
     boxes: boxes which is the same rank as input boxes. Boxes are in normalized
            form.
     labels: new labels.
-
     If label_weights, multiclass_scores, masks, or keypoints is not None, the
     function also returns:
     label_weights: rank 1 float32 tensor with shape [num_instances].
@@ -1445,21 +1330,18 @@ def random_crop_image(image,
 
 def random_pad_image(image,
                      boxes,
-                     keypoints=None,
                      min_image_size=None,
                      max_image_size=None,
                      pad_color=None,
                      seed=None,
                      preprocess_vars_cache=None):
   """Randomly pads the image.
-
   This function randomly pads the image with zeros. The final size of the
   padded image will be between min_image_size and max_image_size.
   if min_image_size is smaller than the input image size, min_image_size will
   be set to the input image size. The same for max_image_size. The input image
   will be located at a uniformly random location inside the padded image.
   The relative location of the boxes to the original image will remain the same.
-
   Args:
     image: rank 3 float32 tensor containing 1 image -> [height, width, channels]
            with pixel values varying between [0, 1].
@@ -1467,31 +1349,24 @@ def random_pad_image(image,
            Boxes are in normalized form meaning their coordinates vary
            between [0, 1].
            Each row is in the form of [ymin, xmin, ymax, xmax].
-    keypoints: (optional) rank 3 float32 tensor with shape
-               [N, num_keypoints, 2]. The keypoints are in y-x normalized
-               coordinates.
     min_image_size: a tensor of size [min_height, min_width], type tf.int32.
                     If passed as None, will be set to image size
                     [height, width].
     max_image_size: a tensor of size [max_height, max_width], type tf.int32.
                     If passed as None, will be set to twice the
                     image [height * 2, width * 2].
-    pad_color: padding color. A rank 1 tensor of [channels] with dtype=
-               tf.float32. if set as None, it will be set to average color of
-               the input image.
+    pad_color: padding color. A rank 1 tensor of [3] with dtype=tf.float32.
+               if set as None, it will be set to average color of the input
+               image.
     seed: random seed.
     preprocess_vars_cache: PreprocessorCache object that records previously
                            performed augmentations. Updated in-place. If this
                            function is called multiple times with the same
                            non-null cache, it will perform deterministically.
-
   Returns:
     image: Image shape will be [new_height, new_width, channels].
     boxes: boxes which is the same rank as input boxes. Boxes are in normalized
            form.
-
-    if keypoints is not None, the function also returns:
-    keypoints: rank 3 float32 tensor with shape [N, num_keypoints, 2]
   """
   if pad_color is None:
     pad_color = tf.reduce_mean(image, axis=[0, 1])
@@ -1566,62 +1441,7 @@ def random_pad_image(image,
   new_boxlist = box_list_ops.change_coordinate_frame(boxlist, new_window)
   new_boxes = new_boxlist.get()
 
-  result = [new_image, new_boxes]
-
-  if keypoints is not None:
-    new_keypoints = keypoint_ops.change_coordinate_frame(keypoints, new_window)
-    result.append(new_keypoints)
-
-  return tuple(result)
-
-
-def random_absolute_pad_image(image,
-                              boxes,
-                              max_height_padding,
-                              max_width_padding,
-                              pad_color=None,
-                              seed=None,
-                              preprocess_vars_cache=None):
-  """Randomly pads the image by small absolute amounts.
-
-  As random_pad_image above, but the padding is of size [0, max_height_padding]
-  or [0, max_width_padding] instead of padding to a fixed size of
-  max_height_padding for all images.
-
-  Args:
-    image: rank 3 float32 tensor containing 1 image -> [height, width, channels]
-           with pixel values varying between [0, 1].
-    boxes: rank 2 float32 tensor containing the bounding boxes -> [N, 4].
-           Boxes are in normalized form meaning their coordinates vary
-           between [0, 1].
-           Each row is in the form of [ymin, xmin, ymax, xmax].
-    max_height_padding: a scalar tf.int32 tensor denoting the maximum amount of
-                        height padding. The padding will be chosen uniformly at
-                        random from [0, max_height_padding).
-    max_width_padding: a scalar tf.int32 tensor denoting the maximum amount of
-                       width padding. The padding will be chosen uniformly at
-                       random from [0, max_width_padding).
-    pad_color: padding color. A rank 1 tensor of [3] with dtype=tf.float32.
-               if set as None, it will be set to average color of the input
-               image.
-    seed: random seed.
-    preprocess_vars_cache: PreprocessorCache object that records previously
-                           performed augmentations. Updated in-place. If this
-                           function is called multiple times with the same
-                           non-null cache, it will perform deterministically.
-
-  Returns:
-    image: Image shape will be [new_height, new_width, channels].
-    boxes: boxes which is the same rank as input boxes. Boxes are in normalized
-           form.
-  """
-  min_image_size = tf.shape(image)[:2]
-  max_image_size = min_image_size + tf.to_int32(
-      [max_height_padding, max_width_padding])
-  return random_pad_image(image, boxes, min_image_size=min_image_size,
-                          max_image_size=max_image_size, pad_color=pad_color,
-                          seed=seed,
-                          preprocess_vars_cache=preprocess_vars_cache)
+  return new_image, new_boxes
 
 
 def random_crop_pad_image(image,
@@ -1642,7 +1462,6 @@ def random_crop_pad_image(image,
                           seed=None,
                           preprocess_vars_cache=None):
   """Randomly crops and pads the image.
-
   Given an input image and its bounding boxes, this op first randomly crops
   the image and then randomly pads the image with background values. Parameters
   min_padded_size_ratio and max_padded_size_ratio, determine the range of the
@@ -1652,7 +1471,6 @@ def random_crop_pad_image(image,
   respect to the size of the original image, so we can't capture the same
   effect easily by independently applying RandomCropImage
   followed by RandomPadImage.
-
   Args:
     image: rank 3 float32 tensor containing 1 image -> [height, width, channels]
            with pixel values varying between [0, 1].
@@ -1690,7 +1508,6 @@ def random_crop_pad_image(image,
                            performed augmentations. Updated in-place. If this
                            function is called multiple times with the same
                            non-null cache, it will perform deterministically.
-
   Returns:
     padded_image: padded image.
     padded_boxes: boxes which is the same rank as input boxes. Boxes are in
@@ -1700,7 +1517,6 @@ def random_crop_pad_image(image,
     cropped_label_weights: cropped label weights.
     if multiclass_scores is not None also returns:
     cropped_multiclass_scores: cropped_multiclass_scores.
-
   """
   image_size = tf.shape(image)
   image_height = image_size[0]
@@ -1773,7 +1589,6 @@ def random_crop_to_aspect_ratio(image,
                                 seed=None,
                                 preprocess_vars_cache=None):
   """Randomly crops an image to the specified aspect ratio.
-
   Randomly crops the a portion of the image such that the crop is of the
   specified aspect ratio, and the crop is as large as possible. If the specified
   aspect ratio is larger than the aspect ratio of the image, this op will
@@ -1782,7 +1597,6 @@ def random_crop_to_aspect_ratio(image,
   remove cols from the left and right of the image. If the specified aspect
   ratio is the same as the aspect ratio of the image, this op will return the
   image.
-
   Args:
     image: rank 3 float32 tensor contains 1 image -> [height, width, channels]
            with pixel values varying between [0, 1].
@@ -1813,13 +1627,11 @@ def random_crop_to_aspect_ratio(image,
                            performed augmentations. Updated in-place. If this
                            function is called multiple times with the same
                            non-null cache, it will perform deterministically.
-
   Returns:
     image: image which is the same rank as input image.
     boxes: boxes which is the same rank as input boxes.
            Boxes are in normalized form.
     labels: new labels.
-
     If label_weights, masks, keypoints, or multiclass_scores is not None, the
     function also returns:
     label_weights: rank 1 float32 tensor with shape [num_instances].
@@ -1829,7 +1641,6 @@ def random_crop_to_aspect_ratio(image,
                [num_instances, num_keypoints, 2]
     multiclass_scores: rank 2 float32 tensor with shape
                        [num_instances, num_classes]
-
   Raises:
     ValueError: If image is not a 3D tensor.
   """
@@ -1945,13 +1756,11 @@ def random_pad_to_aspect_ratio(image,
                                seed=None,
                                preprocess_vars_cache=None):
   """Randomly zero pads an image to the specified aspect ratio.
-
   Pads the image so that the resulting image will have the specified aspect
   ratio without scaling less than the min_padded_size_ratio or more than the
   max_padded_size_ratio. If the min_padded_size_ratio or max_padded_size_ratio
   is lower than what is possible to maintain the aspect ratio, then this method
   will use the least padding to achieve the specified aspect ratio.
-
   Args:
     image: rank 3 float32 tensor contains 1 image -> [height, width, channels]
            with pixel values varying between [0, 1].
@@ -1975,19 +1784,16 @@ def random_pad_to_aspect_ratio(image,
                            performed augmentations. Updated in-place. If this
                            function is called multiple times with the same
                            non-null cache, it will perform deterministically.
-
   Returns:
     image: image which is the same rank as input image.
     boxes: boxes which is the same rank as input boxes.
            Boxes are in normalized form.
     labels: new labels.
-
     If masks, or keypoints is not None, the function also returns:
     masks: rank 3 float32 tensor with shape [num_instances, height, width]
            containing instance masks.
     keypoints: rank 3 float32 tensor with shape
                [num_instances, num_keypoints, 2]
-
   Raises:
     ValueError: If image is not a 3D tensor.
   """
@@ -2070,10 +1876,8 @@ def random_black_patches(image,
                          random_seed=None,
                          preprocess_vars_cache=None):
   """Randomly adds some black patches to the image.
-
   This op adds up to max_black_patches square black patches of a fixed size
   to the image where size is specified via the size_to_image_ratio parameter.
-
   Args:
     image: rank 3 float32 tensor containing 1 image -> [height, width, channels]
            with pixel values varying between [0, 1].
@@ -2089,17 +1893,14 @@ def random_black_patches(image,
                            performed augmentations. Updated in-place. If this
                            function is called multiple times with the same
                            non-null cache, it will perform deterministically.
-
   Returns:
     image
   """
   def add_black_patch_to_image(image, idx):
     """Function for adding one patch to the image.
-
     Args:
       image: image
       idx: counter for number of patches that could have been added
-
     Returns:
       image with a randomly added black box
     """
@@ -2148,10 +1949,8 @@ def random_black_patches(image,
 
 def image_to_float(image):
   """Used in Faster R-CNN. Casts image pixel values to float.
-
   Args:
     image: input image which might be in tf.uint8 or sth else format
-
   Returns:
     image: image in tf.float32 format.
   """
@@ -2162,7 +1961,6 @@ def image_to_float(image):
 
 def random_resize_method(image, target_size, preprocess_vars_cache=None):
   """Uses a random resize method to resize the image to target size.
-
   Args:
     image: a rank 3 tensor.
     target_size: a list of [target_height, target_width]
@@ -2170,7 +1968,6 @@ def random_resize_method(image, target_size, preprocess_vars_cache=None):
                            performed augmentations. Updated in-place. If this
                            function is called multiple times with the same
                            non-null cache, it will perform deterministically.
-
   Returns:
     resized image.
   """
@@ -2185,6 +1982,80 @@ def random_resize_method(image, target_size, preprocess_vars_cache=None):
   return resized_image
 
 
+def _compute_new_static_size(image, min_dimension, max_dimension):
+  """Compute new static shape for resize_to_range method."""
+  image_shape = image.get_shape().as_list()
+  orig_height = image_shape[0]
+  orig_width = image_shape[1]
+  num_channels = image_shape[2]
+  orig_min_dim = min(orig_height, orig_width)
+  # Calculates the larger of the possible sizes
+  large_scale_factor = min_dimension / float(orig_min_dim)
+  # Scaling orig_(height|width) by large_scale_factor will make the smaller
+  # dimension equal to min_dimension, save for floating point rounding errors.
+  # For reasonably-sized images, taking the nearest integer will reliably
+  # eliminate this error.
+  large_height = int(round(orig_height * large_scale_factor))
+  large_width = int(round(orig_width * large_scale_factor))
+  large_size = [large_height, large_width]
+  if max_dimension:
+    # Calculates the smaller of the possible sizes, use that if the larger
+    # is too big.
+    orig_max_dim = max(orig_height, orig_width)
+    small_scale_factor = max_dimension / float(orig_max_dim)
+    # Scaling orig_(height|width) by small_scale_factor will make the larger
+    # dimension equal to max_dimension, save for floating point rounding
+    # errors. For reasonably-sized images, taking the nearest integer will
+    # reliably eliminate this error.
+    small_height = int(round(orig_height * small_scale_factor))
+    small_width = int(round(orig_width * small_scale_factor))
+    small_size = [small_height, small_width]
+    new_size = large_size
+    if max(large_size) > max_dimension:
+      new_size = small_size
+  else:
+    new_size = large_size
+  return tf.constant(new_size + [num_channels])
+
+
+def _compute_new_dynamic_size(image, min_dimension, max_dimension):
+  """Compute new dynamic shape for resize_to_range method."""
+  image_shape = tf.shape(image)
+  orig_height = tf.to_float(image_shape[0])
+  orig_width = tf.to_float(image_shape[1])
+  num_channels = image_shape[2]
+  orig_min_dim = tf.minimum(orig_height, orig_width)
+  # Calculates the larger of the possible sizes
+  min_dimension = tf.constant(min_dimension, dtype=tf.float32)
+  large_scale_factor = min_dimension / orig_min_dim
+  # Scaling orig_(height|width) by large_scale_factor will make the smaller
+  # dimension equal to min_dimension, save for floating point rounding errors.
+  # For reasonably-sized images, taking the nearest integer will reliably
+  # eliminate this error.
+  large_height = tf.to_int32(tf.round(orig_height * large_scale_factor))
+  large_width = tf.to_int32(tf.round(orig_width * large_scale_factor))
+  large_size = tf.stack([large_height, large_width])
+  if max_dimension:
+    # Calculates the smaller of the possible sizes, use that if the larger
+    # is too big.
+    orig_max_dim = tf.maximum(orig_height, orig_width)
+    max_dimension = tf.constant(max_dimension, dtype=tf.float32)
+    small_scale_factor = max_dimension / orig_max_dim
+    # Scaling orig_(height|width) by small_scale_factor will make the larger
+    # dimension equal to max_dimension, save for floating point rounding
+    # errors. For reasonably-sized images, taking the nearest integer will
+    # reliably eliminate this error.
+    small_height = tf.to_int32(tf.round(orig_height * small_scale_factor))
+    small_width = tf.to_int32(tf.round(orig_width * small_scale_factor))
+    small_size = tf.stack([small_height, small_width])
+    new_size = tf.cond(
+        tf.to_float(tf.reduce_max(large_size)) > max_dimension,
+        lambda: small_size, lambda: large_size)
+  else:
+    new_size = large_size
+  return tf.stack(tf.unstack(new_size) + [num_channels])
+
+
 def resize_to_range(image,
                     masks=None,
                     min_dimension=None,
@@ -2194,13 +2065,11 @@ def resize_to_range(image,
                     pad_to_max_dimension=False,
                     per_channel_pad_value=(0, 0, 0)):
   """Resizes an image so its dimensions are within the provided value.
-
   The output size can be described by two cases:
   1. If the image can be rescaled so its minimum dimension is equal to the
      provided value without the other dimension exceeding max_dimension,
      then do so.
   2. Otherwise, resize so the largest dimension is equal to max_dimension.
-
   Args:
     image: A 3D tensor of shape [height, width, channels]
     masks: (optional) rank 3 float32 tensor with shape
@@ -2219,7 +2088,6 @@ def resize_to_range(image,
       similarly.
     per_channel_pad_value: A tuple of per-channel scalar value to use for
       padding. By default pads zeros.
-
   Returns:
     Note that the position of the resized_image_shape changes based on whether
     masks are present.
@@ -2231,38 +2099,19 @@ def resize_to_range(image,
       shape [num_instances, new_height, new_width].
     resized_image_shape: A 1D tensor of shape [3] containing shape of the
       resized image.
-
   Raises:
     ValueError: if the image is not a 3D tensor.
   """
   if len(image.get_shape()) != 3:
     raise ValueError('Image should be 3D tensor')
 
-  def _resize_landscape_image(image):
-    # resize a landscape image
-    return tf.image.resize_images(
-        image, tf.stack([min_dimension, max_dimension]), method=method,
-        align_corners=align_corners)
-
-  def _resize_portrait_image(image):
-    # resize a portrait image
-    return tf.image.resize_images(
-        image, tf.stack([max_dimension, min_dimension]), method=method,
-        align_corners=align_corners)
-
   with tf.name_scope('ResizeToRange', values=[image, min_dimension]):
     if image.get_shape().is_fully_defined():
-      if image.get_shape()[0] < image.get_shape()[1]:
-        new_image = _resize_landscape_image(image)
-      else:
-        new_image = _resize_portrait_image(image)
-      new_size = tf.constant(new_image.get_shape().as_list())
+      new_size = _compute_new_static_size(image, min_dimension, max_dimension)
     else:
-      new_image = tf.cond(
-          tf.less(tf.shape(image)[0], tf.shape(image)[1]),
-          lambda: _resize_landscape_image(image),
-          lambda: _resize_portrait_image(image))
-      new_size = tf.shape(new_image)
+      new_size = _compute_new_dynamic_size(image, min_dimension, max_dimension)
+    new_image = tf.image.resize_images(
+        image, new_size[:-1], method=method, align_corners=align_corners)
 
     if pad_to_max_dimension:
       channels = tf.unstack(new_image, axis=2)
@@ -2301,16 +2150,13 @@ def resize_to_range(image,
 # TODO(alirezafathi): Make sure the static shapes are preserved.
 def resize_to_min_dimension(image, masks=None, min_dimension=600):
   """Resizes image and masks given the min size maintaining the aspect ratio.
-
   If one of the image dimensions is smaller that min_dimension, it will scale
   the image such that its smallest dimension is equal to min_dimension.
   Otherwise, will keep the image size as is.
-
   Args:
     image: a tensor of size [height, width, channels].
     masks: (optional) a tensors of size [num_instances, height, width].
     min_dimension: minimum image dimension.
-
   Returns:
     Note that the position of the resized_image_shape changes based on whether
     masks are present.
@@ -2319,7 +2165,6 @@ def resize_to_min_dimension(image, masks=None, min_dimension=600):
       shape [num_instances, new_height, new_width]
     resized_image_shape: A 1D tensor of shape [3] containing the shape of the
       resized image.
-
   Raises:
     ValueError: if the image is not a 3D tensor.
   """
@@ -2355,7 +2200,6 @@ def resize_to_min_dimension(image, masks=None, min_dimension=600):
 
 def scale_boxes_to_pixel_coordinates(image, boxes, keypoints=None):
   """Scales boxes from normalized to pixel coordinates.
-
   Args:
     image: A 3D float32 tensor of shape [height, width, channels].
     boxes: A 2D float32 tensor of shape [num_boxes, 4] containing the bounding
@@ -2364,7 +2208,6 @@ def scale_boxes_to_pixel_coordinates(image, boxes, keypoints=None):
     keypoints: (optional) rank 3 float32 tensor with shape
       [num_instances, num_keypoints, 2]. The keypoints are in y-x normalized
       coordinates.
-
   Returns:
     image: unchanged input image.
     scaled_boxes: a 2D float32 tensor of shape [num_boxes, 4] containing the
@@ -2394,7 +2237,6 @@ def resize_image(image,
                  method=tf.image.ResizeMethod.BILINEAR,
                  align_corners=False):
   """Resizes images to the given height and width.
-
   Args:
     image: A 3D tensor of shape [height, width, channels]
     masks: (optional) rank 3 float32 tensor with shape
@@ -2405,7 +2247,6 @@ def resize_image(image,
             BILINEAR.
     align_corners: bool. If true, exactly align all 4 corners of the input
                    and output. Defaults to False.
-
   Returns:
     Note that the position of the resized_image_shape changes based on whether
     masks are present.
@@ -2452,7 +2293,6 @@ def resize_image(image,
 
 def subtract_channel_mean(image, means=None):
   """Normalizes an image by subtracting a mean from each channel.
-
   Args:
     image: A 3D tensor of shape [height, width, channels]
     means: float list containing a mean for each channel
@@ -2472,12 +2312,10 @@ def subtract_channel_mean(image, means=None):
 
 def one_hot_encoding(labels, num_classes=None):
   """One-hot encodes the multiclass labels.
-
   Example usage:
     labels = tf.constant([1, 4], dtype=tf.int32)
     one_hot = OneHotEncoding(labels, num_classes=5)
     one_hot.eval()    # evaluates to [0, 1, 0, 0, 1]
-
   Args:
     labels: A tensor of shape [None] corresponding to the labels.
     num_classes: Number of classes in the dataset.
@@ -2497,124 +2335,13 @@ def one_hot_encoding(labels, num_classes=None):
 
 def rgb_to_gray(image):
   """Converts a 3 channel RGB image to a 1 channel grayscale image.
-
   Args:
     image: Rank 3 float32 tensor containing 1 image -> [height, width, 3]
            with pixel values varying between [0, 1].
-
   Returns:
     image: A single channel grayscale image -> [image, height, 1].
   """
   return _rgb_to_grayscale(image)
-
-
-def random_self_concat_image(
-    image, boxes, labels, label_weights, label_confidences=None,
-    multiclass_scores=None, concat_vertical_probability=0.1,
-    concat_horizontal_probability=0.1, seed=None,
-    preprocess_vars_cache=None):
-  """Randomly concatenates the image with itself.
-
-  This function randomly concatenates the image with itself; the random
-  variables for vertical and horizontal concatenation are independent.
-  Afterwards, we adjust the old bounding boxes, and add new bounding boxes
-  for the new objects.
-
-  Args:
-    image: rank 3 float32 tensor containing 1 image -> [height, width, channels]
-           with pixel values varying between [0, 1].
-    boxes: rank 2 float32 tensor containing the bounding boxes -> [N, 4].
-           Boxes are in normalized form meaning their coordinates vary
-           between [0, 1].
-           Each row is in the form of [ymin, xmin, ymax, xmax].
-    labels: rank 1 int32 tensor containing the object classes.
-    label_weights: rank 1 float32 containing the label weights.
-    label_confidences: (optional) rank 1 float32 containing the label
-                       confidences.
-    multiclass_scores: (optional) float32 tensor of shape
-                       [num_instances, num_classes] representing the score for
-                       each box for each class.
-    concat_vertical_probability: (optional) a tf.float32 scalar denoting the
-                                 probability of a vertical concatenation.
-    concat_horizontal_probability: (optional) a tf.float32 scalar denoting the
-                                   probability of a horizontal concatenation.
-    seed: random seed.
-    preprocess_vars_cache: PreprocessorCache object that records previously
-                           performed augmentations. Updated in-place. If this
-                           function is called multiple times with the same
-                           non-null cache, it will perform deterministically.
-
-  Returns:
-    image: Image shape will be [new_height, new_width, channels].
-    boxes: boxes which is the same rank as input boxes. Boxes are in normalized
-           form.
-    if label_confidences is not None also returns:
-    maybe_concat_label_confidences: cropped label weights.
-    if multiclass_scores is not None also returns:
-    maybe_concat_multiclass_scores: cropped_multiclass_scores.
-  """
-
-  concat_vertical = (tf.random_uniform([], seed=seed) <
-                     concat_vertical_probability)
-  # Note the seed + 1 so we get some semblance of independence even with
-  # fixed seeds.
-  concat_horizontal = (tf.random_uniform([], seed=seed + 1 if seed else None)
-                       < concat_horizontal_probability)
-
-  gen_func = lambda: (concat_vertical, concat_horizontal)
-  params = _get_or_create_preprocess_rand_vars(
-      gen_func, preprocessor_cache.PreprocessorCache.SELF_CONCAT_IMAGE,
-      preprocess_vars_cache)
-  concat_vertical, concat_horizontal = params
-
-  def _concat_image(image, boxes, labels, label_weights, axis):
-    """Concats the image to itself on `axis`."""
-    output_images = tf.concat([image, image], axis=axis)
-
-    if axis == 0:
-      # Concat vertically, so need to reduce the y coordinates.
-      old_scaling = tf.to_float([0.5, 1.0, 0.5, 1.0])
-      new_translation = tf.to_float([0.5, 0.0, 0.5, 0.0])
-    elif axis == 1:
-      old_scaling = tf.to_float([1.0, 0.5, 1.0, 0.5])
-      new_translation = tf.to_float([0.0, 0.5, 0.0, 0.5])
-
-    old_boxes = old_scaling * boxes
-    new_boxes = old_boxes + new_translation
-    all_boxes = tf.concat([old_boxes, new_boxes], axis=0)
-
-    return [output_images, all_boxes, tf.tile(labels, [2]), tf.tile(
-        label_weights, [2])]
-
-  image, boxes, labels, label_weights = tf.cond(
-      concat_vertical,
-      lambda: _concat_image(image, boxes, labels, label_weights, axis=0),
-      lambda: [image, boxes, labels, label_weights],
-      strict=True)
-
-  outputs = tf.cond(
-      concat_horizontal,
-      lambda: _concat_image(image, boxes, labels, label_weights, axis=1),
-      lambda: [image, boxes, labels, label_weights],
-      strict=True)
-
-  if label_confidences is not None:
-    label_confidences = tf.cond(concat_vertical,
-                                lambda: tf.tile(label_confidences, [2]),
-                                lambda: label_confidences)
-    outputs.append(tf.cond(concat_horizontal,
-                           lambda: tf.tile(label_confidences, [2]),
-                           lambda: label_confidences))
-
-  if multiclass_scores is not None:
-    multiclass_scores = tf.cond(concat_vertical,
-                                lambda: tf.tile(multiclass_scores, [2, 1]),
-                                lambda: multiclass_scores)
-    outputs.append(tf.cond(concat_horizontal,
-                           lambda: tf.tile(multiclass_scores, [2, 1]),
-                           lambda: multiclass_scores))
-
-  return outputs
 
 
 def ssd_random_crop(image,
@@ -2634,11 +2361,9 @@ def ssd_random_crop(image,
                     seed=None,
                     preprocess_vars_cache=None):
   """Random crop preprocessing with default parameters as in SSD paper.
-
   Liu et al., SSD: Single shot multibox detector.
   For further information on random crop preprocessing refer to RandomCrop
   function above.
-
   Args:
     image: rank 3 float32 tensor contains 1 image -> [height, width, channels]
            with pixel values varying between [0, 1].
@@ -2675,13 +2400,11 @@ def ssd_random_crop(image,
                            performed augmentations. Updated in-place. If this
                            function is called multiple times with the same
                            non-null cache, it will perform deterministically.
-
   Returns:
     image: image which is the same rank as input image.
     boxes: boxes which is the same rank as input boxes.
            Boxes are in normalized form.
     labels: new labels.
-
     If label_weights, multiclass_scores, masks, or keypoints  is not None, the
     function also returns:
     label_weights: rank 1 float32 tensor with shape [num_instances].
@@ -2695,12 +2418,10 @@ def ssd_random_crop(image,
 
   def random_crop_selector(selected_result, index):
     """Applies random_crop_image to selected result.
-
     Args:
       selected_result: A tuple containing image, boxes, labels, keypoints (if
                        not None), and masks (if not None).
       index: The index that was randomly selected.
-
     Returns: A tuple containing image, boxes, labels, keypoints (if not None),
              and masks (if not None).
     """
@@ -2774,11 +2495,9 @@ def ssd_random_crop_pad(image,
                         seed=None,
                         preprocess_vars_cache=None):
   """Random crop preprocessing with default parameters as in SSD paper.
-
   Liu et al., SSD: Single shot multibox detector.
   For further information on random crop preprocessing refer to RandomCrop
   function above.
-
   Args:
     image: rank 3 float32 tensor containing 1 image -> [height, width, channels]
            with pixel values varying between [0, 1].
@@ -2818,7 +2537,6 @@ def ssd_random_crop_pad(image,
                            performed augmentations. Updated in-place. If this
                            function is called multiple times with the same
                            non-null cache, it will perform deterministically.
-
   Returns:
     image: Image shape will be [new_height, new_width, channels].
     boxes: boxes which is the same rank as input boxes. Boxes are in normalized
@@ -2889,13 +2607,10 @@ def ssd_random_crop_fixed_aspect_ratio(
     seed=None,
     preprocess_vars_cache=None):
   """Random crop preprocessing with default parameters as in SSD paper.
-
   Liu et al., SSD: Single shot multibox detector.
   For further information on random crop preprocessing refer to RandomCrop
   function above.
-
   The only difference is that the aspect ratio of the crops are fixed.
-
   Args:
     image: rank 3 float32 tensor contains 1 image -> [height, width, channels]
            with pixel values varying between [0, 1].
@@ -2934,16 +2649,13 @@ def ssd_random_crop_fixed_aspect_ratio(
                            performed augmentations. Updated in-place. If this
                            function is called multiple times with the same
                            non-null cache, it will perform deterministically.
-
   Returns:
     image: image which is the same rank as input image.
     boxes: boxes which is the same rank as input boxes.
            Boxes are in normalized form.
     labels: new labels.
-
-    If multiclass_scores, masks, or keypoints is not None, the function also
+    If mulitclass_scores, masks, or keypoints is not None, the function also
       returns:
-
     multiclass_scores: rank 2 float32 tensor with shape
                        [num_instances, num_classes]
     masks: rank 3 float32 tensor with shape [num_instances, height, width]
@@ -3030,14 +2742,11 @@ def ssd_random_crop_pad_fixed_aspect_ratio(
     seed=None,
     preprocess_vars_cache=None):
   """Random crop and pad preprocessing with default parameters as in SSD paper.
-
   Liu et al., SSD: Single shot multibox detector.
   For further information on random crop preprocessing refer to RandomCrop
   function above.
-
   The only difference is that after the initial crop, images are zero-padded
   to a fixed aspect ratio instead of being resized to that aspect ratio.
-
   Args:
     image: rank 3 float32 tensor contains 1 image -> [height, width, channels]
            with pixel values varying between [0, 1].
@@ -3081,16 +2790,13 @@ def ssd_random_crop_pad_fixed_aspect_ratio(
                            performed augmentations. Updated in-place. If this
                            function is called multiple times with the same
                            non-null cache, it will perform deterministically.
-
   Returns:
     image: image which is the same rank as input image.
     boxes: boxes which is the same rank as input boxes.
            Boxes are in normalized form.
     labels: new labels.
-
     If multiclass_scores, masks, or keypoints is not None, the function also
     returns:
-
     multiclass_scores: rank 2 with shape [num_instances, num_classes]
     masks: rank 3 float32 tensor with shape [num_instances, height, width]
            containing instance masks.
@@ -3165,14 +2871,12 @@ def ssd_random_crop_pad_fixed_aspect_ratio(
 
 def convert_class_logits_to_softmax(multiclass_scores, temperature=1.0):
   """Converts multiclass logits to softmax scores after applying temperature.
-
   Args:
     multiclass_scores: float32 tensor of shape
       [num_instances, num_classes] representing the score for each box for each
       class.
     temperature: Scale factor to use prior to applying softmax. Larger
       temperatures give more uniform distruibutions after softmax.
-
   Returns:
     multiclass_scores: float32 tensor of shape
       [num_instances, num_classes] with scaling and softmax applied.
@@ -3192,7 +2896,6 @@ def get_default_func_arg_map(include_label_weights=True,
                              include_instance_masks=False,
                              include_keypoints=False):
   """Returns the default mapping from a preprocessor function to its args.
-
   Args:
     include_label_weights: If True, preprocessing functions will modify the
       label weights, too.
@@ -3204,7 +2907,6 @@ def get_default_func_arg_map(include_label_weights=True,
       instance masks, too.
     include_keypoints: If True, preprocessing functions will modify the
       keypoints, too.
-
   Returns:
     A map from preprocessing functions to the arguments they receive.
   """
@@ -3269,13 +2971,9 @@ def get_default_func_arg_map(include_label_weights=True,
                           groundtruth_label_weights,
                           groundtruth_label_confidences,
                           multiclass_scores,
-                          groundtruth_instance_masks,
-                          groundtruth_keypoints),
+                          groundtruth_instance_masks, groundtruth_keypoints),
       random_pad_image: (fields.InputDataFields.image,
-                         fields.InputDataFields.groundtruth_boxes,
-                         groundtruth_keypoints),
-      random_absolute_pad_image: (fields.InputDataFields.image,
-                                  fields.InputDataFields.groundtruth_boxes),
+                         fields.InputDataFields.groundtruth_boxes),
       random_crop_pad_image: (fields.InputDataFields.image,
                               fields.InputDataFields.groundtruth_boxes,
                               fields.InputDataFields.groundtruth_classes,
@@ -3330,12 +3028,6 @@ def get_default_func_arg_map(include_label_weights=True,
       subtract_channel_mean: (fields.InputDataFields.image,),
       one_hot_encoding: (fields.InputDataFields.groundtruth_image_classes,),
       rgb_to_gray: (fields.InputDataFields.image,),
-      random_self_concat_image: (fields.InputDataFields.image,
-                                 fields.InputDataFields.groundtruth_boxes,
-                                 fields.InputDataFields.groundtruth_classes,
-                                 groundtruth_label_weights,
-                                 groundtruth_label_confidences,
-                                 multiclass_scores),
       ssd_random_crop: (fields.InputDataFields.image,
                         fields.InputDataFields.groundtruth_boxes,
                         fields.InputDataFields.groundtruth_classes,
@@ -3380,12 +3072,10 @@ def preprocess(tensor_dict,
                func_arg_map=None,
                preprocess_vars_cache=None):
   """Preprocess images and bounding boxes.
-
   Various types of preprocessing (to be implemented) based on the
   preprocess_options dictionary e.g. "crop image" (affects image and possibly
   boxes), "white balance image" (affects only image), etc. If self._options
   is None, no preprocessing is done.
-
   Args:
     tensor_dict: dictionary that contains images, boxes, and can contain other
                  things as well.
@@ -3407,10 +3097,8 @@ def preprocess(tensor_dict,
                            performed augmentations. Updated in-place. If this
                            function is called multiple times with the same
                            non-null cache, it will perform deterministically.
-
   Returns:
     tensor_dict: which contains the preprocessed images, bounding boxes, etc.
-
   Raises:
     ValueError: (a) If the functions passed to Preprocess
                     are not in func_arg_map.
@@ -3449,7 +3137,6 @@ def preprocess(tensor_dict,
     if (preprocess_vars_cache is not None and
         'preprocess_vars_cache' in inspect.getargspec(func).args):
       params['preprocess_vars_cache'] = preprocess_vars_cache
-
     results = func(*args, **params)
     if not isinstance(results, (list, tuple)):
       results = (results,)
@@ -3466,3 +3153,16 @@ def preprocess(tensor_dict,
     tensor_dict[fields.InputDataFields.image] = images
 
   return tensor_dict
+© 2019 GitHub, Inc.
+Terms
+Privacy
+Security
+Status
+Help
+Contact GitHub
+Pricing
+API
+Training
+Blog
+About
+
