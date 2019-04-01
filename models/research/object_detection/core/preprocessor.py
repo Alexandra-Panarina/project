@@ -3153,16 +3153,3 @@ def preprocess(tensor_dict,
     tensor_dict[fields.InputDataFields.image] = images
 
   return tensor_dict
-© 2019 GitHub, Inc.
-Terms
-Privacy
-Security
-Status
-Help
-Contact GitHub
-Pricing
-API
-Training
-Blog
-About
-
