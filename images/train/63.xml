@@ -1,0 +1,26 @@
+<annotation>
+	<folder>train</folder>
+	<filename>63.png</filename>
+	<path>/home/alexandra/.git/local_directory/images/train/63.png</path>
+	<source>
+		<database>Unknown</database>
+	</source>
+	<size>
+		<width>800</width>
+		<height>600</height>
+		<depth>3</depth>
+	</size>
+	<segmented>0</segmented>
+	<object>
+		<name>railway_arrows</name>
+		<pose>Unspecified</pose>
+		<truncated>0</truncated>
+		<difficult>0</difficult>
+		<bndbox>
+			<xmin>390</xmin>
+			<ymin>190</ymin>
+			<xmax>448</xmax>
+			<ymax>242</ymax>
+		</bndbox>
+	</object>
+</annotation>
