@@ -1,4 +1,13 @@
 item {
   id: 1
-  name: 'railway_arrows'
+  name: 'left'
 }
+item {
+  id: 2
+  name: 'right'
+}
+item {
+  id: 3
+  name: 'straight'
+}
+
