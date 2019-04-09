@@ -12,15 +12,15 @@
 	</size>
 	<segmented>0</segmented>
 	<object>
-		<name>railway_arrows</name>
+		<name>right</name>
 		<pose>Unspecified</pose>
 		<truncated>0</truncated>
 		<difficult>0</difficult>
 		<bndbox>
-			<xmin>328</xmin>
-			<ymin>181</ymin>
-			<xmax>396</xmax>
-			<ymax>248</ymax>
+			<xmin>320</xmin>
+			<ymin>174</ymin>
+			<xmax>392</xmax>
+			<ymax>237</ymax>
 		</bndbox>
 	</object>
 </annotation>
