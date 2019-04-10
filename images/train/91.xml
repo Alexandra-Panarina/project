@@ -1,7 +1,7 @@
 <annotation>
 	<folder>train</folder>
-	<filename>83.png</filename>
-	<path>/home/alexandra/.git/local_directory/images/train/83.png</path>
+	<filename>91.png</filename>
+	<path>/home/alexandra/.git/local_directory/images/train/91.png</path>
 	<source>
 		<database>Unknown</database>
 	</source>
@@ -17,22 +17,22 @@
 		<truncated>0</truncated>
 		<difficult>0</difficult>
 		<bndbox>
-			<xmin>271</xmin>
-			<ymin>438</ymin>
-			<xmax>434</xmax>
-			<ymax>527</ymax>
+			<xmin>386</xmin>
+			<ymin>372</ymin>
+			<xmax>503</xmax>
+			<ymax>453</ymax>
 		</bndbox>
 	</object>
 	<object>
-		<name>right</name>
+		<name>left</name>
 		<pose>Unspecified</pose>
 		<truncated>0</truncated>
 		<difficult>0</difficult>
 		<bndbox>
-			<xmin>541</xmin>
-			<ymin>442</ymin>
-			<xmax>706</xmax>
-			<ymax>545</ymax>
+			<xmin>425</xmin>
+			<ymin>183</ymin>
+			<xmax>467</xmax>
+			<ymax>200</ymax>
 		</bndbox>
 	</object>
 </annotation>
