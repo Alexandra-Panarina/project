@@ -1,0 +1,26 @@
+<annotation>
+	<folder>train</folder>
+	<filename>80.png</filename>
+	<path>/home/alexandra/.git/local_directory/images/train/80.png</path>
+	<source>
+		<database>Unknown</database>
+	</source>
+	<size>
+		<width>800</width>
+		<height>600</height>
+		<depth>3</depth>
+	</size>
+	<segmented>0</segmented>
+	<object>
+		<name>left</name>
+		<pose>Unspecified</pose>
+		<truncated>0</truncated>
+		<difficult>0</difficult>
+		<bndbox>
+			<xmin>328</xmin>
+			<ymin>221</ymin>
+			<xmax>384</xmax>
+			<ymax>250</ymax>
+		</bndbox>
+	</object>
+</annotation>
