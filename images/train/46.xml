@@ -12,14 +12,26 @@
 	</size>
 	<segmented>0</segmented>
 	<object>
+		<name>right</name>
+		<pose>Unspecified</pose>
+		<truncated>0</truncated>
+		<difficult>0</difficult>
+		<bndbox>
+			<xmin>368</xmin>
+			<ymin>264</ymin>
+			<xmax>539</xmax>
+			<ymax>597</ymax>
+		</bndbox>
+	</object>
+	<object>
 		<name>left</name>
 		<pose>Unspecified</pose>
 		<truncated>0</truncated>
 		<difficult>0</difficult>
 		<bndbox>
-			<xmin>420</xmin>
-			<ymin>200</ymin>
-			<xmax>468</xmax>
+			<xmin>419</xmin>
+			<ymin>179</ymin>
+			<xmax>466</xmax>
 			<ymax>223</ymax>
 		</bndbox>
 	</object>
